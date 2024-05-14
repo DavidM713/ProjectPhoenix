@@ -1,0 +1,69 @@
+#include <SD.h>
+#include <Wire.h>
+#include "SparkFunMPL3115A2.h"
+//Create an instance of the object
+MPL3115A2 myPressure;
+File myFile;
+int ledPin = 13;  // LED is attached to digital pin 13
+
+const int led_pin = PB5;
+uint32_t count = 0;
+unsigned long time;
+float SuperSonicMin = 0.0; // time it takes to reach supersonic speed
+float SuperSonicSec = 5.0; 
+void setup() {
+  // put your setup code here, to run once:
+  Wire.begin();        // Join i2c bus
+  myPressure.begin(); // Get sensor online
+  Serial.begin(115200);
+  Serial.println("");
+  Serial.println("Timer:");
+  myPressure.setModeAltimeter(); // Measure altitude above sea level in meters
+  myPressure.setModeBarometer(); // Measure pressure in Pascals from 20 to 110 kPa
+  myPressure.setOversampleRate(128); // Set Oversample to the recommended 128
+  myPressure.enableEventFlags(); // Enable all three pressure and temp event flags 
+
+
+}
+void loop() {
+  // put your main code here, to run repeatedly:
+  time = millis();
+
+  float SuperSonicCount = (SuperSonicSec/60.0 +SuperSonicMin)*60000.0;
+  int MilliSec = time % 10;
+  int HundrethSec = (time/10) % 10;
+  int TenthSec = (time/100) % 10;
+  int OneSec = (time/ 1000) % 10;
+  int TenSec = (time/ 10000)%6;
+  Serial.print("T+");Serial.print(time/60000);Serial.print(":");Serial.print(TenSec);Serial.print(OneSec);Serial.print(":");Serial.print(TenthSec);Serial.print(HundrethSec);Serial.print(MilliSec);
+  //Serial.print(time);    
+   if(time > SuperSonicCount ){
+    PORTB ^= (1 << led_pin);
+    pinMode(ledPin, OUTPUT);
+
+  }
+  //float altitude = myPressure.readAltitude();
+ // Serial.print(" Altitude(m):");
+  //Serial.print(altitude, 2);
+  float altitude = myPressure.readAltitudeFt()-82905;
+  Serial.print(" Altitude(ft):");
+  Serial.print(altitude, 2);
+  float pressure = myPressure.readPressure();
+  Serial.print(" Pressure(Pa):");
+  Serial.println(pressure, 2);
+
+   // open the file. note that only one file can be open at a time,
+  // so you have to close this one before opening another.
+
+
+  
+
+  //float temperature = myPressure.readTemp();
+  //Serial.print(" Temp(c):");
+  //Serial.print(temperature, 2);
+  //float temperature = myPressure.readTempF();
+  //Serial.print(" Temp(f):");
+  //Serial.print(temperature, 2);
+  //Serial.println();
+
+}
